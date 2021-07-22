@@ -96,17 +96,17 @@ class GameOfLife():
 
     def next_generation(self):
         next_state = np.zeros(shape=self.shape, dtype=int)
-        upper_tol = 3 * self.neighbors / 4
-        lower_tol = self.neighbors / 2
+        upper_tol = self.neighbors / 2
+        lower_tol = self.neighbors / 4
 
         for j in range(self.width):
             for i in range(self.height):
-                count = self.count_alive()
+                count = self.alive_neighbors(i, j)
                 if self.state[i][j]:
-                    if count < lower_tol or count >= upper_tol:
-                        next_state[i][j] = 0
+                    if (count >= lower_tol and count < upper_tol):
+                        next_state[i][j] = 1
                 else:
-                    if count > upper_tol:
+                    if count > lower_tol and count < upper_tol:
                         next_state[i][j] = 1
 
         return next_state
