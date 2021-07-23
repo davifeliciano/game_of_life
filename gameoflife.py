@@ -1,4 +1,6 @@
 import numpy as np
+from numpy.random import default_rng
+rng = default_rng()
 
 
 class GameOfLife():
@@ -7,19 +9,26 @@ class GameOfLife():
 
     Attributes
 
+    generation : int
+        the generation in which the system is.
+
     state : np.ndarray
         integer numpy array with zeros for the dead, ones otherwise.
 
     shape : tuple
-        width and height of state
+        width and height of state.
 
     elite : float
         number between 0 and 1 that roughtly indicates the percentage of
         the population that will be immortal.
 
-    nstatus : np.ndarray
+    status : np.ndarray
         integer numpy array showing the status of each individual: one 
         represents a immortal and zero, a mortal. 
+
+    expec : int
+        life expectancy of elite individuals. After this number of
+        generations a new status array will be generated.
 
     norder : int
         a positive integer representing the size of the neighborhood
@@ -31,12 +40,39 @@ class GameOfLife():
         'vonneumann' and 'moore'. If none of these are suplied,
         'vonneumann' is assumed.
 
-    neighsize : int
-        size of the neighborhood
-
+    nsize : int
+        size of the neighborhood.
     '''
 
-    def __init__(self, state, norder=1, ntype='moore', elite=0):
+    def __init__(self, state, norder=1, ntype='moore', elite=0.0, expec=0):
+        '''
+        Constructor of GameOfLife
+
+        Parameters
+
+        state : np.ndarray
+            integer numpy array with zeros for the dead, ones otherwise.
+
+        norder : int
+            a positive integer representing the size of the neighborhood
+            to be considered.
+
+        ntype : str
+            the type of neighborhood that will be used to evaluate if
+            someone will die or not past a generation. Valid ones are
+            'vonneumann' and 'moore'. If none of these are suplied,
+            'vonneumann' is assumed.
+
+        elite : float
+            number between 0 and 1 that roughtly indicates the percentage of
+            the alive population that will be immortal.
+
+        expec : int
+            life expectancy of elite individuals. After this number of
+            generations a new status array will be generated.
+        '''
+
+        self.generation = 0
 
         if isinstance(state, np.ndarray):
             if state.ndim != 2:
@@ -49,31 +85,46 @@ class GameOfLife():
         self.shape = self.state.shape
         self.width, self.height = self.shape
 
+        self.norder = int(abs(norder))
+
+        if ntype == 'vonneumann':
+            self._ntype = ntype
+            self._nsize = self.norder ** 2 + (self.norder + 1) ** 2 - 1
+        else:
+            self._ntype = 'moore'
+            self._nsize = (2 * self.norder + 1) ** 2 - 1
+
         if elite < 0 and elite > 1:
             raise ValueError('elite must be a float between 0 and 1')
         else:
             self.elite = elite
 
-        nstatus = np.zeros(shape=self.shape, dtype=int)
-        if self.elite:
-            for i in range(height):
-                for j in range(width):
-                    rand = rng.random()
-                    if rand < elite:
-                        nstatus[i][j] = 1
-        self.nstatus = nstatus
+        self.expec = int(abs(expec))
 
-        self.norder = abs(norder)
-
-        if ntype == 'vonneumann':
-            self.ntype = ntype
-            self.neighsize = self.norder ** 2 + (self.norder + 1) ** 2 - 1
-        else:
-            self.ntype = 'moore'
-            self.neighsize = (2 * self.norder + 1) ** 2 - 1
+        self.status = np.zeros(shape=self.shape, dtype=int)
+        self.update_status()
 
     def __str__(self):
         return f"GameOfLife(shape={self.shape}, ntype='{self.ntype}', elite={self.elite})"
+
+    def update_status(self):
+        if self.elite:
+            status = np.zeros(shape=self.shape, dtype=int)
+            for i in range(self.height):
+                for j in range(self.width):
+                    if self.state[i][j]:
+                        rand = rng.random()
+                        if rand < self.elite:
+                            status[i][j] = 1
+            self.status = status
+
+    @property
+    def ntype(self):
+        return self._ntype
+
+    @property
+    def nsize(self):
+        return self._nsize
 
     def show(self):
         print(self.state)
@@ -82,7 +133,7 @@ class GameOfLife():
         return self.state.sum()
 
     def count_elite(self):
-        return self.nstatus.sum()
+        return self.status.sum()
 
     def alive_neighbors(self, i0, j0):
         count = 0
@@ -113,20 +164,23 @@ class GameOfLife():
             upper_tol = 3
             lower_tol = 2
         else:
-            upper_tol = self.neighsize / 2
-            lower_tol = self.neighsize / 4
+            upper_tol = self.nsize / 2
+            lower_tol = self.nsize / 4
 
         for j in range(self.width):
             for i in range(self.height):
                 count = self.alive_neighbors(i, j)
                 if self.state[i][j]:
-                    if (count >= lower_tol and count < upper_tol):
+                    if (count >= lower_tol and count < upper_tol) or self.status[i][j]:
                         next_state[i][j] = 1
                 else:
-                    if count > lower_tol and count < upper_tol:
+                    if (count > lower_tol and count < upper_tol) or self.status[i][j]:
                         next_state[i][j] = 1
 
         return next_state
 
     def update(self):
+        self.generation += 1
+        if self.expec and self.generation % self.expec == 0:
+            self.update_status()
         self.state = self.next_generation()
