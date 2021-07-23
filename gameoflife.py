@@ -105,7 +105,7 @@ class GameOfLife():
         self.update_status()
 
     def __str__(self):
-        return f"GameOfLife(shape={self.shape}, ntype='{self.ntype}', elite={self.elite})"
+        return f"GameOfLife(shape={self.shape}, ntype='{self.ntype}', elite={self.elite}, expec={self.expec})"
 
     def update_status(self):
         if self.elite:
@@ -128,6 +128,9 @@ class GameOfLife():
 
     def show(self):
         print(self.state)
+
+    def show_status(self):
+        print(self.status)
 
     def count_alive(self):
         return self.state.sum()
@@ -157,7 +160,7 @@ class GameOfLife():
 
         return count
 
-    def next_generation(self):
+    def next_state(self):
         next_state = np.zeros(shape=self.shape, dtype=int)
 
         if self.ntype == 'vonneumann' and self.norder == 1:
@@ -183,4 +186,11 @@ class GameOfLife():
         self.generation += 1
         if self.expec and self.generation % self.expec == 0:
             self.update_status()
-        self.state = self.next_generation()
+        self.state = self.next_state()
+
+    def moving(self):
+        '''Return True if the next state is different from the current state'''
+        if np.array_equal(self.state, self.next_state()):
+            return False
+        else:
+            return True
