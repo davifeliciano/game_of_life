@@ -14,6 +14,11 @@ class GameOfLife():
 
     state : np.ndarray
         integer numpy array with zeros for the dead, ones otherwise.
+        This array represents the current state of the game.
+
+    init_state : np.ndarray
+        integer numpy array with zeros for the dead, ones otherwise.
+        This array represents the initial state of the game.
 
     shape : tuple
         width and height of state.
@@ -54,7 +59,7 @@ class GameOfLife():
             integer numpy array with zeros for the dead, ones otherwise.
 
         norder : int
-            a positive integer representing the size of the neighborhood
+            a positive non-zero integer representing the size of the neighborhood
             to be considered.
 
         ntype : str
@@ -74,18 +79,19 @@ class GameOfLife():
 
         self.generation = 0
 
-        if isinstance(state, np.ndarray):
-            if state.ndim != 2:
-                raise ValueError('ndim of state must be 2')
-            else:
-                self.state = state
+        if state.ndim != 2:
+            raise ValueError('ndim of state must be 2')
         else:
-            raise TypeError('state must be a numpy 2-dimensional ndarray')
+            self._init_state = state
+            self.state = state
 
         self.shape = self.state.shape
-        self.width, self.height = self.shape
+        self.height, self.width = self.shape
 
-        self.norder = int(abs(norder))
+        if norder:
+            self.norder = int(abs(norder))
+        else:
+            self.norder = 1
 
         if ntype == 'vonneumann':
             self._ntype = ntype
@@ -119,6 +125,10 @@ class GameOfLife():
             self.status = status
 
     @property
+    def init_state(self):
+        return self._init_state
+
+    @property
     def ntype(self):
         return self._ntype
 
@@ -128,6 +138,9 @@ class GameOfLife():
 
     def show(self):
         print(self.state)
+
+    def show_init_state(self):
+        print(self.init_state)
 
     def show_status(self):
         print(self.status)
@@ -155,8 +168,7 @@ class GameOfLife():
                 if j0 + j in range(self.width) and i0 + i in range(self.height):
                     count += self.state[i0 + i][j0 + j]
 
-        if self.state[i0][j0]:
-            count -= 1
+            count -= self.state[i0][j0]
 
         return count
 
@@ -187,6 +199,9 @@ class GameOfLife():
         if self.expec and self.generation % self.expec == 0:
             self.update_status()
         self.state = self.next_state()
+
+    def reset(self):
+        self.state = self._init_state
 
     def moving(self):
         '''Return True if the next state is different from the current state'''
