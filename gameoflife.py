@@ -49,7 +49,7 @@ class GameOfLife():
         size of the neighborhood.
     '''
 
-    def __init__(self, state, norder=1, ntype='moore', elite=0.0, expec=0):
+    def __init__(self, state, norder=1, ntype='moore', elite=0.0, expec=1):
         '''
         Constructor of GameOfLife
 
@@ -105,7 +105,10 @@ class GameOfLife():
         else:
             self.elite = elite
 
-        self.expec = int(abs(expec))
+        if expec:
+            self.expec = int(abs(expec))
+        else:
+            self.expec = 1
 
         self.status = np.zeros(shape=self.shape, dtype=int)
         self.update_status()
@@ -168,7 +171,8 @@ class GameOfLife():
                 if j0 + j in range(self.width) and i0 + i in range(self.height):
                     count += self.state[i0 + i][j0 + j]
 
-            count -= self.state[i0][j0]
+        if self.state[i0][j0]:
+            count -= 1
 
         return count
 
