@@ -12,7 +12,6 @@ parser.add_argument('--elite', action='store_true',
                     help='enable elite in the game')
 
 args = parser.parse_args()
-print(args.elite)
 
 width, height = size = (1608, 905)
 
