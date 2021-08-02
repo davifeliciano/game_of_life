@@ -112,6 +112,7 @@ class GameOfLife():
 
         self.status = np.zeros(shape=self.shape, dtype=int)
         self.update_status()
+        self._init_status = self.status
 
     def __str__(self):
         return f"GameOfLife(shape={self.shape}, ntype='{self.ntype}', elite={self.elite}, expec={self.expec})"
@@ -130,6 +131,10 @@ class GameOfLife():
     @property
     def init_state(self):
         return self._init_state
+
+    @property
+    def init_status(self):
+        return self._init_status
 
     @property
     def ntype(self):
@@ -205,7 +210,9 @@ class GameOfLife():
         self.state = self.next_state()
 
     def reset(self):
+        self.generation = 0
         self.state = self._init_state
+        self.status = self._init_status
 
     def moving(self):
         '''Return True if the next state is different from the current state'''
