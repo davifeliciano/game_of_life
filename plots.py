@@ -1,5 +1,4 @@
 import argparse
-import concurrent.futures
 import numpy as np
 from numpy.random import default_rng
 import matplotlib.pyplot as plt
