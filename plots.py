@@ -35,9 +35,12 @@ parser.add_argument('-x', '--expec', type=int, nargs='?', default=5, const=5,
 parser.add_argument('-f', '--file', type=str, nargs='?', default='plot.png', const='plot.png',
                     help='name of the output file. Default is plot.png')
 
+parser.add_argument('-d', '--dpi', type=int, nargs='?', default=200, const=200,
+                    help='dpi of the image file')
+
 args = parser.parse_args()
 
-n = args.n
+n_of_games = args.n
 gens = args.g
 shape = args.height, args.width
 ntype = args.type
@@ -45,18 +48,19 @@ norder = args.order
 elite = args.elite
 expec = args.expec
 filename = args.file
+dpi = args.dpi
 
 rng = default_rng()
 
 
 def main():
 
-    series = np.ndarray(shape=(n, gens), dtype=int)
-    series_elite = np.ndarray(shape=(n, gens), dtype=int)
+    series = np.ndarray(shape=(n_of_games, gens), dtype=int)
+    series_elite = np.ndarray(shape=(n_of_games, gens), dtype=int)
     games = []
     games_elite = []
 
-    for i in range(n):
+    for i in range(n_of_games):
         state = rng.choice([0, 1], size=shape)
         games.append(GameOfLife(state, norder, ntype))
         games_elite.append(GameOfLife(state, norder, ntype, elite, norder))
@@ -66,7 +70,7 @@ def main():
 
     for gen in range(gens):
         print(f'Computing generation {gen + 1} of {gens}')
-        for i in range(n):
+        for i in range(n_of_games):
             for s, g in zip(series_tuple, games_tuple):
                 s[i][gen] = g[i].count_alive()
                 g[i].update()
@@ -75,18 +79,29 @@ def main():
 
     fig, ax = plt.subplots()
 
+    if ntype == 'vonneumann':
+        neigh_name = 'Von Neumann'
+    else:
+        neigh_name = 'Moore'
+
     ax.set(xlim=(1, gens),
            xticks=range(1, gens + 1),
+           ylabel='Alive Population',
+           xlabel='Generation',
+           title=f'Average Population of {n_of_games} {shape[0]} by {shape[1]} Games\n'
+                 f'Using {neigh_name} Neighborhood of Order {norder}'
            )
 
     t = np.arange(1, gens + 1)
     color_tuple = ('blue', 'red')
     label_tuple = ('No elite', 'Elite')
 
-    for i in range(n):
+    for i in range(n_of_games):
         for s, c, l in zip(series_tuple, color_tuple, label_tuple):
-            ax.plot(t, s[i], color=c, label=l, lw=0.7, alpha=0.3)
-            ax.plot(t, np.mean(s, axis=0), color=c, label=l + ' average')
+            ax.plot(t, s[i], color=c, label=l, lw=0.7,
+                    alpha=0.3, antialiased=True)
+            ax.plot(t, np.mean(s, axis=0), color=c,
+                    label=l + ' average', antialiased=True)
 
     handles, labels = ax.get_legend_handles_labels()
     new_labels, new_handles = [], []
@@ -100,7 +115,7 @@ def main():
 
     print(f'Saving image on {filename}')
 
-    plt.savefig(filename, dpi=300)
+    plt.savefig(filename, dpi=dpi)
 
 
 if __name__ == '__main__':
