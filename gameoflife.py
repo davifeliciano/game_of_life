@@ -77,16 +77,16 @@ class GameOfLife():
             generations a new status array will be generated.
         '''
 
-        self.generation = 0
+        self._generation = 0
 
         if state.ndim != 2:
             raise ValueError('ndim of state must be 2')
         else:
-            self._init_state = state
+            self.init_state = state
             self.state = state
 
         self.shape = self.state.shape
-        self.height, self.width = self.shape
+        self._height, self._width = self.shape
 
         if norder:
             self.norder = int(abs(norder))
@@ -112,29 +112,21 @@ class GameOfLife():
 
         self.status = np.zeros(shape=self.shape, dtype=int)
         self.update_status()
-        self._init_status = self.status
+        self.init_status = self.status
 
-    def __str__(self):
+    def __repr__(self):
         return f"GameOfLife(shape={self.shape}, ntype='{self.ntype}', elite={self.elite}, expec={self.expec})"
 
     def update_status(self):
         if self.elite:
             status = np.zeros(shape=self.shape, dtype=int)
-            for i in range(self.height):
-                for j in range(self.width):
+            for i in range(self._height):
+                for j in range(self._width):
                     if self.state[i][j]:
                         rand = rng.random()
                         if rand < self.elite:
                             status[i][j] = 1
             self.status = status
-
-    @property
-    def init_state(self):
-        return self._init_state
-
-    @property
-    def init_status(self):
-        return self._init_status
 
     @property
     def ntype(self):
@@ -173,7 +165,7 @@ class GameOfLife():
                 range_i = range_j
 
             for i in range_i:
-                if j0 + j in range(self.width) and i0 + i in range(self.height):
+                if j0 + j in range(self._width) and i0 + i in range(self._height):
                     count += self.state[i0 + i][j0 + j]
 
         if self.state[i0][j0]:
@@ -191,8 +183,8 @@ class GameOfLife():
             upper_tol = self.nsize / 2
             lower_tol = self.nsize / 4
 
-        for j in range(self.width):
-            for i in range(self.height):
+        for j in range(self._width):
+            for i in range(self._height):
                 count = self.alive_neighbors(i, j)
                 if self.state[i][j]:
                     if (count >= lower_tol and count < upper_tol) or self.status[i][j]:
@@ -204,15 +196,15 @@ class GameOfLife():
         return next_state
 
     def update(self):
-        self.generation += 1
-        if self.expec and self.generation % self.expec == 0:
+        self._generation += 1
+        if self.expec and self._generation % self.expec == 0:
             self.update_status()
         self.state = self.next_state()
 
     def reset(self):
-        self.generation = 0
-        self.state = self._init_state
-        self.status = self._init_status
+        self._generation = 0
+        self.state = self.init_state
+        self.status = self.init_status
 
     def moving(self):
         '''Return True if the next state is different from the current state'''
