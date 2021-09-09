@@ -1,10 +1,11 @@
 import numpy as np
 from numpy.random import default_rng
+
 rng = default_rng()
 
 
-class GameOfLife():
-    '''
+class GameOfLife:
+    """
     Conway's Game of life
 
     Attributes
@@ -28,8 +29,8 @@ class GameOfLife():
         the population that will be immortal.
 
     status : np.ndarray
-        integer numpy array showing the status of each individual: one 
-        represents a immortal and zero, a mortal. 
+        integer numpy array showing the status of each individual: one
+        represents a immortal and zero, a mortal.
 
     expec : int
         life expectancy of elite individuals. After this number of
@@ -47,10 +48,10 @@ class GameOfLife():
 
     nsize : int
         size of the neighborhood.
-    '''
+    """
 
-    def __init__(self, state, norder=1, ntype='moore', elite=0.0, expec=1):
-        '''
+    def __init__(self, state, norder=1, ntype="moore", elite=0.0, expec=1):
+        """
         Constructor of GameOfLife
 
         Parameters
@@ -75,12 +76,12 @@ class GameOfLife():
         expec : int
             life expectancy of elite individuals. After this number of
             generations a new status array will be generated.
-        '''
+        """
 
         self._generation = 0
 
         if state.ndim != 2:
-            raise ValueError('ndim of state must be 2')
+            raise ValueError("ndim of state must be 2")
         else:
             self.init_state = state
             self.state = state
@@ -93,15 +94,15 @@ class GameOfLife():
         else:
             self.norder = 1
 
-        if ntype == 'vonneumann':
+        if ntype == "vonneumann":
             self._ntype = ntype
             self._nsize = self.norder ** 2 + (self.norder + 1) ** 2 - 1
         else:
-            self._ntype = 'moore'
+            self._ntype = "moore"
             self._nsize = (2 * self.norder + 1) ** 2 - 1
 
         if elite < 0 and elite > 1:
-            raise ValueError('elite must be a float between 0 and 1')
+            raise ValueError("elite must be a float between 0 and 1")
         else:
             self.elite = elite
 
@@ -154,14 +155,14 @@ class GameOfLife():
     def alive_neighbors(self, i0, j0):
         count = 0
         r = self.norder
-        range_j = range(- r, r + 1)
+        range_j = range(-r, r + 1)
 
         for j in range_j:
 
-            if self.ntype == 'vonneumann':
+            if self.ntype == "vonneumann":
                 r_j = r - abs(j)
-                range_i = range(- r_j, r_j + 1)
-            if self.ntype == 'moore':
+                range_i = range(-r_j, r_j + 1)
+            if self.ntype == "moore":
                 range_i = range_j
 
             for i in range_i:
@@ -176,7 +177,7 @@ class GameOfLife():
     def next_state(self):
         next_state = np.zeros(shape=self.shape, dtype=int)
 
-        if self.ntype == 'vonneumann' and self.norder == 1:
+        if self.ntype == "vonneumann" and self.norder == 1:
             upper_tol = 3
             lower_tol = 2
         else:
@@ -207,7 +208,7 @@ class GameOfLife():
         self.status = self.init_status
 
     def moving(self):
-        '''Return True if the next state is different from the current state'''
+        """Return True if the next state is different from the current state"""
         if np.array_equal(self.state, self.next_state()):
             return False
         else:

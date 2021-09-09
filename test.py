@@ -5,18 +5,18 @@ from gameoflife import GameOfLife
 
 
 def clear_screen():
-    os.system('cls' if os.name == 'nt' else 'clear')
+    os.system("cls" if os.name == "nt" else "clear")
 
 
 def move_cursor(y, x):
-    '''Move cursor to position (x, y)'''
+    """Move cursor to position (x, y)"""
     print("\033[%d;%dH" % (y, x))
 
 
 def game_loop(game, time):
     clear_screen()
     move_cursor(0, 0)
-    print(game, '\n')
+    print(game, "\n")
     game.show()
     while game.moving():
         move_cursor(3, 0)
@@ -24,7 +24,7 @@ def game_loop(game, time):
         game.show()
         sleep(time)
 
-    print('\nDone!')
+    print("\nDone!")
     sleep(2.0)
 
 

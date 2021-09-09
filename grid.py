@@ -6,15 +6,17 @@ from gameoflife import GameOfLife
 
 COLORS = ((189, 147, 249), (80, 250, 123))
 
+
 class GridRect(pygame.Rect):
-    ''' Rect with respective position on the Grid '''
+    """Rect with respective position on the Grid"""
+
     def __init__(self, rect_pos, rect_dims, pos_in_grid):
         super().__init__(rect_pos, rect_dims)
         self.pos_in_grid = tuple(pos_in_grid)
 
 
-class Grid():
-    '''
+class Grid:
+    """
     Grid to draw a Game of Life in a pygame surface
 
     Attributes
@@ -38,10 +40,12 @@ class Grid():
 
     game : GameOfLife
         the game that will be drawn to the surface.
-    '''
+    """
 
-    def __init__(self, surface, scale=20, offset=2, colors=COLORS, random=False, elite=False):
-        '''
+    def __init__(
+        self, surface, scale=20, offset=2, colors=COLORS, random=False, elite=False
+    ):
+        """
         Constructor of Grid
 
         Parameters
@@ -66,7 +70,7 @@ class Grid():
         elite : Bool
             if True, Grid.game will be initialized with elite=0.05 and
             expec=5
-        '''
+        """
 
         self.surface = surface
         self.scale = scale
@@ -84,7 +88,7 @@ class Grid():
             rng = default_rng()
             state = rng.choice([0, 1], size=self.shape)
         else:
-            ''' Create a glider on the top left of the Grid '''
+            """Create a glider on the top left of the Grid"""
             state = np.zeros(shape=self.shape, dtype=int)
 
             state[1][2] = 1
@@ -103,16 +107,18 @@ class Grid():
         self.game = GameOfLife(state, elite=elite, expec=expec)
 
     def get_rect(self, pos):
-        ''' Returns the rect (if any) of a given position on the screen '''
+        """Returns the rect (if any) of a given position on the screen"""
         indexes = [int(p / (self.offset + self.scale)) for p in pos]
-        rect_pos = tuple([index * (self.offset + self.scale) + self.offset for index in indexes])
+        rect_pos = tuple(
+            [index * (self.offset + self.scale) + self.offset for index in indexes]
+        )
         rect = GridRect(rect_pos, (self.scale, self.scale), pos_in_grid=indexes)
         return rect
 
     def handle_mouse(self, pos, mouse_state):
-        ''' Takes the position and state of the mouse and draws or erases the respective cell on the screen '''
+        """Takes the position and state of the mouse and draws or erases the respective cell on the screen"""
         rect = self.get_rect(pos)
-        
+
         if rect.collidepoint(*pos):
             j, i = rect.pos_in_grid
 
@@ -133,7 +139,7 @@ class Grid():
         pygame.display.update(rect)
 
     def draw(self):
-        ''' Draw the grid on the screen '''
+        """Draw the grid on the screen"""
         for i in range(self._height):
             for j in range(self._width):
                 x = j * (self.offset + self.scale)
@@ -150,16 +156,16 @@ class Grid():
                     color = self.colors[1]
                     width = 0
 
-                pygame.draw.rect(self.surface, color,
-                                 [x + self.offset,
-                                     y + self.offset,
-                                     self.scale,
-                                     self.scale],
-                                 width=width,
-                                 border_radius=3)
+                pygame.draw.rect(
+                    self.surface,
+                    color,
+                    [x + self.offset, y + self.offset, self.scale, self.scale],
+                    width=width,
+                    border_radius=3,
+                )
 
     def reset(self):
-        ''' Reset the Grid to the initial state '''
+        """Reset the Grid to the initial state"""
         self.game.reset()
         self.draw()
         pygame.display.update()
