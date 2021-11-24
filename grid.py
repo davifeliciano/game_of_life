@@ -1,18 +1,11 @@
 import pygame
+from pygame import Rect
 import numpy as np
 from numpy.random import default_rng
 
 from gameoflife import GameOfLife
 
 COLORS = ((189, 147, 249), (80, 250, 123))
-
-
-class GridRect(pygame.Rect):
-    """Rect with respective position on the Grid"""
-
-    def __init__(self, rect_pos, rect_dims, pos_in_grid):
-        super().__init__(rect_pos, rect_dims)
-        self.pos_in_grid = tuple(pos_in_grid)
 
 
 class Grid:
@@ -107,21 +100,22 @@ class Grid:
         self.game = GameOfLife(state, elite=elite, expec=expec)
 
     def get_rect(self, pos):
-        """Returns the rect (if any) of a given position on the screen"""
+        """
+        Returns a tuple with the rect (if any) of a given position on the screen,
+        and the respective indexes on the grid
+        """
         indexes = [int(p / (self.offset + self.scale)) for p in pos]
         rect_pos = tuple(
             [index * (self.offset + self.scale) + self.offset for index in indexes]
         )
-        rect = GridRect(rect_pos, (self.scale, self.scale), pos_in_grid=indexes)
-        return rect
+        rect = Rect(rect_pos, (self.scale, self.scale), pos_in_grid=indexes)
+        return (rect, *indexes)
 
     def handle_mouse(self, pos, mouse_state):
         """Takes the position and state of the mouse and draws or erases the respective cell on the screen"""
-        rect = self.get_rect(pos)
+        rect, j, i = self.get_rect(pos)
 
         if rect.collidepoint(*pos):
-            j, i = rect.pos_in_grid
-
             try:
                 if mouse_state[0]:
                     self.game.state[i][j] = 1
